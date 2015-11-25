@@ -9,7 +9,7 @@ class SocketState:
 class RxPSocket:
 
 	CONNECTION_TIMEOUT_LIMIT = 30 # seconds
-	
+
 	def __init__(self):
 		self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
@@ -43,6 +43,9 @@ class RxPSocket:
 
 		self.seq_number = 0
 		self.ack_number = 0
+
+	def sendPacket(self, rxp_packet):
+		self._socket.sentdto(rxp_packet.byteVersion(), self.source_address)
 
 		
 
