@@ -77,7 +77,11 @@ class RxP:
 
 	def sendACK(rxp_socket):
 		print "Method not completed"
-		# todo implmenet sending of ack
+		# todo implement sending of ack
+
+	def sendSYNACK(rxp_socket):
+		print "Method not completed"
+		# todo implement sending of ack
 
 	def sendData(rxp_socket, data):
 		if not rxp_socket.state == SocketState.CONNECTED:

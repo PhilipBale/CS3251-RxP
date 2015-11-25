@@ -1,4 +1,4 @@
-import RxpPacketHeader
+from RxPPacketHeader import RxPPacketHeader
 import math
 import md5
 
