@@ -2,10 +2,12 @@ import RxPPacketHeader
 import math
 import md5
 
+MAX_WINDOW_SIZE = math.pow(2, 16)
+MAX_SEQ_NUM = math.pow(2, 32) 
+MAX_PAYLOAD_LENGTH = math.pow(2,9) # in bytes
+
 class RxPPacket:
-	MAX_WINDOW_SIZE = math.pow(2, 16)
-	MAX_SEQ_NUM = math.pos(2, 32) 
-	MAX_PAYLOAD_LENGTH = math.pos(2,9) # in bytes
+	
 
 	def __init__(self, header=None, payload=None):
 		self.header = header or RxPPacketHeader()
@@ -26,7 +28,7 @@ class RxPPacket:
 
 	# gets byte version of packets
 	def byteVersion(self):
-
+		print "Not yet implemented"
 
 	# fancy formatting
 	def __str__(self):

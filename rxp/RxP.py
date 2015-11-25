@@ -1,18 +1,21 @@
-import RxPSocket
-import RxPPacket
-import RxPException
+from RxPSocket import RxPSocket
+from RxPPacket import RxPPacket
+from RxPException import RxPException
 
 import Queue
 
 class RxP:
 
+	@staticmethod
 	def createRxPSocket(ip_address, port_number):
 		socket = RxPSocket()
 		source_address = (ip_address, port_number)
 		socket.bind(source_address)
 		return socket
 
+	@staticmethod
 	def closeRxPSocket(rxp_socket):
+		rxp_socket.close()
 		# todo send closing stuff
 
 	def listenForRxPConnections(rxp_socket):
@@ -25,14 +28,14 @@ class RxP:
 				packet_address, incoming_packet = receiveData(rxp_socket, rxp_socket.receive_window_size)
 			except RxPException as e:
 				if e.type == RxPException.TIMEOUT or e.type == RxPException.INVALID_CHECKSUM:
-					timeout_limit--
+					timeout_limit -= 1
 
 			if not incoming_packet is None:
 				if packet.header.syn_flag == 1: # TODO determine if needs to be unique
 					return (packet_address, incoming_packet)
 
 		if timeout_limit <= 0:
-			raise RxPException(RxPException.CONNECTION_TIMEOUT))
+			raise RxPException(RxPException.CONNECTION_TIMEOUT)
 
 		return None
 
@@ -69,9 +72,11 @@ class RxP:
 		rxp_socket.receive_window_size = window_length
 
 	def sendSYN(rxp_socket):
+		print "Method not completed"
 		# todo implement sending of syn
 
 	def sendACK(rxp_socket):
+		print "Method not completed"
 		# todo implmenet sending of ack
 
 	def sendData(rxp_socket, data):
@@ -84,7 +89,7 @@ class RxP:
 		packet_payload_length = RxPPacket.MAX_PAYLOAD_LENGTH
 		numberOfPackets = len(data) / packet_payload_length
 		if len(data) % packet_payload_length > 0:
-			numberOfPackets++
+			numberOfPackets += 1
 
 		for i in range(numberOfPackets):
 			start_index = packet_payload_length * i
@@ -99,5 +104,4 @@ class RxP:
 
 	def receiveData(rxp_socket, max_length):
 		# todo implement data receiving
-
-	
+		print "Method not completed"
