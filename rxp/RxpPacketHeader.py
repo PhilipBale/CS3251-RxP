@@ -1,20 +1,30 @@
 class RxPPacketHeader:
 	
-	src_port = 0
-	dest_port = 0
+	def __init__(self):	
+		self.src_port = 0
+		self.dest_port = 0
 
-	seq_number = 0
-	ack_number = 0
+		self.seq_number = 0
+		self.ack_number = 0
 
-	syn_flag = 0
-	ack_flag = 0
-	fin_flag = 0
-	lst_flag = 0
-	rst_flag = 0
+		self.syn_flag = 0
+		self.ack_flag = 0
+		self.fin_flag = 0
+		self.lst_flag = 0
+		self.rst_flag = 0
 
-	rcv_window = 0
-	payload_length = 0
+		self.rcv_window = 0
 
-	checksum = 0
+		self.checksum = 0
+		self.payload_length = 0
 
-	payload = None
+	def packetToString():
+		return "" + self.src_port + self.dest_port + self.seq_number + self.ack_number 
+		+ self.syn_flag + self.ack_flag + self.fin_flag + self.lst_flag + self.rst_flag 
+		+ self.payload_length + self.rcv_window
+
+		# todo do we include rcv_window?
+
+
+
+	
