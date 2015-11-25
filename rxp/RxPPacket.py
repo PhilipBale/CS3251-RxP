@@ -11,7 +11,7 @@ class RxPPacket:
 
 	# compute checksum & compare it against embedded checksum
 	def verify_packet(self):
-
+		return checksum() == self.header.checksum
 
 	# fancy formatting
 	def __str__(self):
