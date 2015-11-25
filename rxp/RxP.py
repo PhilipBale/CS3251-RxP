@@ -2,12 +2,15 @@ import RxPSocket
 import RxPPacket
 import RxPException
 
+import Queue
+
 class RxP:
 
 	def createRxPSocket(ip_address, port_number):
 		socket = RxPSocket()
 		source_address = (ip_address, port_number)
 		socket.bind(source_address)
+		return socket
 
 	def closeRxPSocket(rxp_socket):
 		# todo send closing stuff
@@ -76,6 +79,21 @@ class RxP:
 			raise RxPException("sendData: Socket not connected!")
 		
 		# break data into chunks
+		data_chunks = Queue.Queue()
+
+		packet_payload_length = RxPPacket.MAX_PAYLOAD_LENGTH
+		numberOfPackets = len(data) / packet_payload_length
+		if len(data) % packet_payload_length > 0:
+			numberOfPackets++
+
+		for i in range(numberOfPackets):
+			start_index = packet_payload_length * i
+			end_index = start_index + packet_payload_length
+
+			if i + 1 == numberOfPackets :
+				data_chunks.append(data[start_index:])
+			else:
+				data_chunks.append(data[start_index:end_index])
 
 		# construct packet queue
 

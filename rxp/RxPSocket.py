@@ -23,6 +23,8 @@ class RxPSocket:
 		self.seq_number = 0
 		self.ack_number = 0
 
+	def close(self):
+		# todo
 
 	def setTimeout(self, value):
 		self._socket.settimeout(value)

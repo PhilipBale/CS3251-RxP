@@ -4,7 +4,8 @@ import md5
 
 class RxPPacket:
 	MAX_WINDOW_SIZE = math.pow(2, 16)
-	MAX_SEQ_NUM = math.pos(2, 32)
+	MAX_SEQ_NUM = math.pos(2, 32) 
+	MAX_PAYLOAD_LENGTH = math.pos(2,9) # in bytes
 
 	def __init__(self, header=None, payload=None):
 		self.header = header or RxPPacketHeader()
