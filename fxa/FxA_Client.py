@@ -5,10 +5,8 @@ import sys
 # for ip address validation
 from socket import inet_aton
 
-#testing stuff, delete me
-#print 'Number of arguments:', len(sys.argv), 'arguments.'
-#print 'Argument List:', str(sys.argv)
 
+# check for number of correct command line arguments
 if len(sys.argv) != 4:
     print ('Please enter arguments in the correct format: X A P' + 
         '\nX: The port number this client should bind to'+
@@ -18,9 +16,20 @@ if len(sys.argv) != 4:
     sys.exit()
 
 # port number at which the FxA-client's UDP socket should bind to. Should be equal to the server's port number minus 1
-portnumber = int(sys.argv[1])
+try:
+    portnumber = int(sys.argv[1])
+except:
+    print 'Please enter a valid port number for client (1025-65536)'
+    sys.exit()
+
 ipaddress = sys.argv[2]
-emuportnumber = int(sys.argv[3])
+
+try:
+    emuportnumber = int(sys.argv[3])
+except:
+    print 'Please enter a valid port number for NetEmu (1025-65536)'
+    sys.exit()
+
 file = ""
 size = 1
 
