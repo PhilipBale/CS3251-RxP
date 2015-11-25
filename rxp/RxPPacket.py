@@ -20,11 +20,15 @@ class RxPPacket:
 		return md5_adjusted_checksum
 
 	# compute checksum & compare it against embedded checksum
-	def verify_packet(self):
+	def verifyPacket(self):
 		return checksum() == self.header.checksum
+
+	# gets byte version of packets
+	def byteVersion(self):
+
 
 	# fancy formatting
 	def __str__(self):
-		print("Packet verified: ", verify_packet())
+		print("Packet verified: ", verifyPacket())
 		print("Packet payload: ", self.payload)
 

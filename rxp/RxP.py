@@ -14,7 +14,7 @@ class RxP:
 
 	def listenForRxPConnections(rxp_socket):
 		if rxp_socket.state == SocketState.NONE:
-			raise RxPException("Socket not yet bound!")
+			raise RxPException("listenForRxPConnections: Socket not yet bound!")
 
 		timeout_limit = rxp_socket.CONNECTION_TIMEOUT_LIMIT
 		while timeout_limit > 0:
@@ -37,9 +37,9 @@ class RxP:
 	# incoming connection is a (src, packet) tuple
 	def acceptRxPSocketConnection(rxp_socket, incoming_connection):
 		if rxp_socket.state == SocketState.NONE:
-			raise RxPException("Socket not yet bound!")
+			raise RxPException("acceptRxPSocketConnection: Socket not yet bound!")
 		elif rxp_socket.state == SocketState.BOUND:
-			raise RxPException("No destination set!")
+			raise RxPException("acceptRxPSocketConnection: No destination set!")
 
 		incoming_address, incoming_packet = incoming_connection
 
@@ -49,6 +49,8 @@ class RxP:
 		rxp_socket.destination_address = packet_address
 
 		response = sendSYNACK(rxp_socket)
+
+		rxp_socket.state = SocketState.CONNECTED
 
 
 	def connectToRxP(rxp_socket, ip_address, port_number):
@@ -70,7 +72,12 @@ class RxP:
 		# todo implmenet sending of ack
 
 	def sendData(rxp_socket, data):
-		# todo implement data sending
+		if not rxp_socket.state == SocketState.CONNECTED:
+			raise RxPException("sendData: Socket not connected!")
+		
+		# break data into chunks
+
+		# construct packet queue
 
 	def receiveData(rxp_socket, max_length):
 		# todo implement data receiving

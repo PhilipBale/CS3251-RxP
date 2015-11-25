@@ -1,4 +1,4 @@
-class RxPException():
+class RxPException(Exception):
 
 	NONE = ""
 	TIMEOUT = "operation timed out"
