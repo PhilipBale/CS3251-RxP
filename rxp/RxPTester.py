@@ -11,7 +11,7 @@ def main():
     if test_to_run == 1:
         test_create_socket()
     elif test_to_run ==2:
-        test_2()
+        test_basic_connection()
     elif test_to_run == 3:
         test_3()
     else:
@@ -24,7 +24,7 @@ def test_create_socket():
     RxP.closeRxPSocket(socket)
 
 #basic client server
-def test_2():
+def test_basic_connection():
     client = RxP.createRxPSocket("127.0.0.1", 5000)
     server = RxP.createRxPSocket("127.0.0.1", 5001)
     RxP.listenForRxPConnections(server)

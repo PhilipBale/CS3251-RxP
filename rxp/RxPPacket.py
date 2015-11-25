@@ -5,6 +5,7 @@ import md5
 MAX_WINDOW_SIZE = math.pow(2, 16)
 MAX_SEQ_NUM = math.pow(2, 32) 
 MAX_PAYLOAD_LENGTH = math.pow(2,9) # in bytes
+RESEND_LIMIT = 20
 
 class RxPPacket:
 	

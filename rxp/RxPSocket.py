@@ -59,6 +59,17 @@ class RxPSocket:
 	def sendPacket(self, rxp_packet):
 		self._socket.sentdto(rxp_packet.byteVersion(), self.source_address)
 
+	def receivePacket(self, receive_window_size):
+		while True:
+			try:
+				packet, address = self._socket.recvfrom(receive_window_size)
+				break
+			except socket.error as e:
+				if e.error != -1:
+					raise e # todo fix
+
+		return (address, packet)
+
 		
 	def __str__(self):
 		return "State: " + str(self.state[0]) + ", Source: " + str(self.source_address) \
