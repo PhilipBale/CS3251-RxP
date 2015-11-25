@@ -18,7 +18,7 @@ class RxPPacketHeader:
 		self.checksum = 0
 		self.payload_length = 0
 
-	def packetToString():
+	def toString():
 		return "" + self.src_port + self.dest_port + self.seq_number + self.ack_number 
 		+ self.syn_flag + self.ack_flag + self.fin_flag + self.lst_flag + self.rst_flag 
 		+ self.payload_length + self.rcv_window

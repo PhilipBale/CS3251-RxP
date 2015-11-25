@@ -14,7 +14,8 @@ class RxPPacket:
 
 	# https://docs.python.org/2/library/md5.html
 	def checksum(self, payload):
-		md5_checksum = md5.new(payload).digest()
+		total_payload = self.header.toString() + payload
+		md5_checksum = md5.new(total_payload).digest()
 		md5_adjusted_checksum = md5_checksum[:2] + md5_checksum[14:16]
 		return md5_adjusted_checksum
 
