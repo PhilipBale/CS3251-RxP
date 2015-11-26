@@ -3,7 +3,6 @@ from RxPPacket import RxPPacket
 from RxPPacketHeader import RxPPacketHeader
 from RxPException import RxPException
 
-import Queue
 from collections import deque
 
 class RxP:
@@ -25,12 +24,17 @@ class RxP:
 		if rxp_socket.state == SocketState.NONE:
 			raise RxPException("listenForRxPConnections: Socket not yet bound!")
 
-		timeout_limit = rxp_socket.CONNECTION_TIMEOUT_LIMIT
+		timeout_limit = rxp_socket.LISTEN_TIMEOUT_LIMIT
 		while timeout_limit > 0:
+			incoming_packet = None
 			try:
 				packet_address, incoming_packet = rxp_socket.receivePacket(rxp_socket.receive_window_size)
 			except RxPException as e:
 				if e.type == RxPException.TIMEOUT or e.type == RxPException.INVALID_CHECKSUM:
+					timeout_limit -= 1
+			except Exception as e:
+				if str(e) == "timed out":
+					print "Timed out, trying again."
 					timeout_limit -= 1
 
 			if not incoming_packet is None:
@@ -161,31 +165,35 @@ class RxP:
 				else:
 					print("Received succesful ACK to our SYNACK")
 					return packet
-
-			except rxp_socket.timeout:
-				print("Sending SYN timed out. " + number_of_resends + " resends remaining")
-				number_of_resends -= 1
+			except Exception as e:
+				if str(e) == "timed out": 
+					print("Sending SYN timed out. " + number_of_resends + " resends remaining")
+					number_of_resends -= 1
+				else: 
+					raise e
+				
 
 		return None
 
+	@staticmethod
 	def sendData(rxp_socket, data):
 		if not rxp_socket.state == SocketState.CONNECTED:
 			raise RxPException("sendData: Socket not connected!")
 		
 		# break data into chunks
-		data_chunks = Queue.Queue()
+		data_chunks = deque()
 
 		packet_payload_length = RxPPacket.MAX_PAYLOAD_LENGTH
-		numberOfPackets = len(data) / packet_payload_length
+		numberOfPackets = int(len(data) / packet_payload_length)
 		if len(data) % packet_payload_length > 0:
 			numberOfPackets += 1
 
 		print("Preparing " + str(numberOfPackets) + " packets to send")
 		for i in range(numberOfPackets):
-			start_index = packet_payload_length * i
-			end_index = start_index + packet_payload_length
+			start_index = int(packet_payload_length * i)
+			end_index = int(start_index + packet_payload_length)
 
-			if i + 1 == numberOfPackets :
+			if i + 1 == numberOfPackets:
 				data_chunks.append(data[start_index:])
 			else:
 				data_chunks.append(data[start_index:end_index])
@@ -214,7 +222,7 @@ class RxP:
 			packets_to_send.append(packet)
 
 		# these are the packets that we know are sent but haven't been acked yet
-		packets_to_be_acked  = deque()()
+		packets_to_be_acked  = deque()
 
 		window_size = rxp_socket.receive_window_size
 		last_seq_number = 0
@@ -253,14 +261,15 @@ class RxP:
 							print ("Receive duplicate packet. Discarding")
 				
 
-
-			except socket.timeout:
-				print("Socket timeout for sent ack receive--resending")
-				# need to send packet
-				window_size = 1
-				packets_to_send.extendLeft(packets_to_be_acked)
-				packets_to_be_acked.clear()
-
+			except Exception as e:
+				if str(e) == "timed out": 
+					print("Socket timeout for sent ack receive--resending")
+					# need to send packet
+					window_size = 1
+					packets_to_send.extendleft(packets_to_be_acked)
+					packets_to_be_acked.clear()
+				else: 
+					raise e
 
 	def receiveData(rxp_socket, max_length):
 		# todo implement data receiving

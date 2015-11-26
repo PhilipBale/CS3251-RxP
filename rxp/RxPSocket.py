@@ -11,9 +11,11 @@ class SocketState:
 
 
 CONNECTION_TIMEOUT_LIMIT = 5
+LISTEN_TIMEOUT_LIMIT = 10
 
 class RxPSocket:
 	CONNECTION_TIMEOUT_LIMIT = CONNECTION_TIMEOUT_LIMIT
+	LISTEN_TIMEOUT_LIMIT = LISTEN_TIMEOUT_LIMIT
 
 	def __init__(self):
 		print("Initializing new RxPSocket")
@@ -29,7 +31,7 @@ class RxPSocket:
 		self.seq_number = 0
 		self.ack_number = 0
 
-		self._socket.settimeout(CONNECTION_TIMEOUT_LIMIT)
+		self._socket.settimeout(CONNECTION_TIMEOUT_LIMIT * 5) # tiemout larger for connection
 
 		print("Socket initialized!", str(self))
 

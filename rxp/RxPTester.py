@@ -1,5 +1,6 @@
 from RxP import RxP
 import sys
+import time
 
 
 #run this like 'python RxPTester.py 2'
@@ -14,7 +15,7 @@ def main():
     elif test_to_run ==2:
         test_basic_connection(is_client)
     elif test_to_run == 3:
-        test_3()
+        test_basic_sending(is_client)
     else:
         print "No commands run!"
 
@@ -30,6 +31,7 @@ def test_basic_connection(is_client):
         print "Testing basic connection as a client"
         client = RxP.createRxPSocket("localhost", 5000)
         RxP.connectToRxP(client, "localhost", 5001)
+        time.sleep(3)
         RxP.closeRxPSocket(client)
     else:
         print "Testing basic connection as a server"
@@ -37,18 +39,30 @@ def test_basic_connection(is_client):
         connection_attempt_address = RxP.listenForRxPConnections(server)
         print("Receieved connection attempt from: ", connection_attempt_address)
         RxP.acceptRxPSocketConnection(server, connection_attempt_address)
+        time.sleep(3)
         RxP.closeRxPSocket(server)
-
-    #not sure the accept works after listening. Do we have to call it or should it do it automatically if it's listening?
-    #server.acceptRxPSocketConnection(server, )
-
     
 
 #basic send. Should fail cause sockets are not connected
-def test_3():
-    client = RxP.createRxPSocket("localhost", 5000)
-    server = RxP.createRxPSocket("localhost", 5001)
-    RxP.sendData(client, "Hello")
+def test_basic_sending(is_client):
+    if is_client:
+        print "Testing basic connection as a client"
+        client = RxP.createRxPSocket("localhost", 5000)
+        RxP.connectToRxP(client, "localhost", 5001)
+        RxP.sendData(client, "Hello, World!")
+
+        RxP.closeRxPSocket(client)
+    else:
+        print "Testing basic connection as a server"
+        server = RxP.createRxPSocket("localhost", 5001)
+        connection_attempt_address = RxP.listenForRxPConnections(server)
+        print("Receieved connection attempt from: ", connection_attempt_address)
+        RxP.acceptRxPSocketConnection(server, connection_attempt_address)
+
+        time.sleep(5)
+ 
+        RxP.closeRxPSocket(server)
+
 
 #basic connect and send. Should pass
 def test_4():
