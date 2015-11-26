@@ -36,7 +36,7 @@ def main():
 
     file = ""
     # window size in segments
-    windowSize = 1
+    windowSize = 29992
 
     # check for valid client port numbers
     if portnumber < 1025 or portnumber > 65536: 
@@ -52,8 +52,9 @@ def main():
     try:
         inet_aton(ipaddress)
     except:
-        print("Not a valid IP address")
-        sys.exit()
+        if ipaddress != "localhost":
+            print("Not a valid IP address")
+            sys.exit()
 
     # check for valid NetEmu UDP port number
     if emuportnumber < 1025 or emuportnumber > 65536: 
@@ -63,7 +64,7 @@ def main():
     # When everything passes, bind the RxP socket to passed in ip_address and port_number
     clientSocket = RxP.createRxPSocket(ipaddress, portnumber)
     global clientSocket
-    
+
     # Set window size
     RxP.setWindowSize(clientSocket, windowSize)
 

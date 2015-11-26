@@ -85,7 +85,7 @@ class RxP:
 
 	@staticmethod
 	def sendSYN(rxp_socket):
-		print "Sending SYN!"
+		print "Sending SYN! from socket", rxp_socket
 
 		header = RxPPacketHeader()
 		header.src_port = rxp_socket.source_address[1]
@@ -99,7 +99,7 @@ class RxP:
 		while number_of_resends > 0:
 			print "Attempt #", (RxPPacket.MAX_RESEND_LIMIT - number_of_resends) + 1
 			rxp_socket.sendPacket(packet)
-
+			print "Window size: ", rxp_socket.receive_window_size
 			try:
 				address, packet = rxp_socket.receivePacket(rxp_socket.receive_window_size)
 
@@ -118,7 +118,12 @@ class RxP:
 				if str(e) == "timed out": 
 					print("Sending SYN timed out. " + str(number_of_resends - 1) + " attempts remaining")
 					number_of_resends -= 1
-				else: 
+				elif str(e).find("EOFError"):
+					print("Packet was mangled! resending!")
+					number_of_resends -= 1
+				else:
+					print "Grr"
+					print str(e)
 					raise e
 		raise RxPException("Sending SYN failed!")
 
@@ -169,7 +174,7 @@ class RxP:
 					return packet
 			except Exception as e:
 				if str(e) == "timed out": 
-					print("Sending SYN timed out. " + number_of_resends + " resends remaining")
+					print("Sending SYN timed out. " + str(number_of_resends) + " resends remaining")
 					number_of_resends -= 1
 				else: 
 					raise e

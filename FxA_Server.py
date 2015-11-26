@@ -47,8 +47,9 @@ def main():
     try:
         inet_aton(ipaddress)
     except:
-        print("Not a valid IP address")
-        sys.exit()
+        if ipaddress != "localhost":
+            print("Not a valid IP address")
+            sys.exit()
 
     # check for valid NetEmu UDP port number
     if emuportnumber < 1025 or emuportnumber > 65536: 
@@ -59,6 +60,7 @@ def main():
 
     # creating and binding rxp socket
     serverSocket = RxP.createRxPSocket(ipaddress, portnumber)
+    global serverSocket
     incoming_connection = RxP.listenForRxPConnections(serverSocket)
 
     # After getting an incoming connection
@@ -101,8 +103,8 @@ def window(newsize):
 #Shutdown the server
 def terminate():
     print "Shutting down server"
-    serverSocket.closeRxPSocket()
-    
+    RxP.closeRxPSocket(serverSocket)
+    sys.exit()
     return
 
 main()

@@ -72,8 +72,10 @@ class RxPSocket:
 				packet, address = self._socket.recvfrom(int(receive_window_size))
 				print "packet received"
 				packet = self.unpicklePacket(packet)
+				print "unpickled"
+
 				break
-			except socket.error as e:
+			except Exception as e:
 				print("Received error", e)
 				raise e
 
