@@ -1,4 +1,4 @@
-from RxPSocket import RxPSocket
+from RxPSocket import RxPSocket, SocketState
 from RxPPacket import RxPPacket
 from RxPPacketHeader import RxPPacketHeader
 from RxPException import RxPException
@@ -20,6 +20,7 @@ class RxP:
 		rxp_socket.close()
 		# todo send closing stuff
 
+	@staticmethod
 	def listenForRxPConnections(rxp_socket):
 		if rxp_socket.state == SocketState.NONE:
 			raise RxPException("listenForRxPConnections: Socket not yet bound!")
@@ -33,8 +34,8 @@ class RxP:
 					timeout_limit -= 1
 
 			if not incoming_packet is None:
-				if packet.header.syn_flag == 1: # TODO determine if needs to be unique
-					return incoming_packet
+				if incoming_packet.header.syn_flag == 1: # TODO determine if needs to be unique
+					return packet_address
 
 		if timeout_limit <= 0:
 			raise RxPException(RxPException.CONNECTION_TIMEOUT)
@@ -43,36 +44,40 @@ class RxP:
 
 	# sends ack to a potential connection
 	# incoming connection is a (src, packet) tuple
-	def acceptRxPSocketConnection(rxp_socket, incoming_connection):
+	@staticmethod
+	def acceptRxPSocketConnection(rxp_socket, incoming_address):
 		if rxp_socket.state == SocketState.NONE:
 			raise RxPException("acceptRxPSocketConnection: Socket not yet bound!")
-		elif rxp_socket.state == SocketState.BOUND:
-			raise RxPException("acceptRxPSocketConnection: No destination set!")
+		elif rxp_socket.state != SocketState.BOUND:
+			raise RxPException("acceptRxPSocketConnection: Socket needs to be bound!")
 
-		incoming_address, incoming_packet = incoming_connection
 
 		rxp_socket.seq_number = 0
-		rxp_socket.ack_number = incoming_packet.header.seq_number + 1
+		rxp_socket.ack_number = 1
 
-		rxp_socket.destination_address = packet_address
+		rxp_socket.destination_address = incoming_address
 
-		response = sendSYNACK(rxp_socket)
+		response = RxP.sendSYNACK(rxp_socket)
 
 		rxp_socket.state = SocketState.CONNECTED
+		print("Succesfully accepted an RxP connection!")
 
-
+	@staticmethod
 	def connectToRxP(rxp_socket, ip_address, port_number):
 		destination_address = (ip_address, port_number)
 		rxp_socket.connect(destination_address)
 
-		syn_ack = sendSYN(rxp_socket) # TODO implement
+		syn_ack = RxP.sendSYN(rxp_socket) # TODO implement
 		rxp_socket.ack_number = syn_ack.header.seq_number + 1
 
-		sendACK(rxp_socket)
+		RxP.sendACK(rxp_socket)
+
+		print("Succesfully connected to RxP!")
 
 	def setWindowSize(rxp_socket, window_length):
 		rxp_socket.receive_window_size = window_length
 
+	@staticmethod
 	def sendSYN(rxp_socket):
 		print "Sending SYN!"
 
@@ -81,18 +86,20 @@ class RxP:
 		header.dst_port = rxp_socket.destination_address[1]
 		header.syn_flag = 1
 
-		packet = RxPPacket(header, data)
+		packet = RxPPacket(header)
 
-		number_of_resends = RxPPacket.RESEND_LIMIT
+		number_of_resends = RxPPacket.MAX_RESEND_LIMIT
 
 		while number_of_resends > 0:
-
+			print "Attempt #", (RxPPacket.MAX_RESEND_LIMIT - number_of_resends) + 1
 			rxp_socket.sendPacket(packet)
 
 			try:
 				address, packet = rxp_socket.receivePacket(rxp_socket.receive_window_size)
 
-				if !packet.verifyPacket(): #invalid checksum
+				print "Verifying packet"
+
+				if not packet.verifyPacket(): #invalid checksum
 					print("Incorrect checksum for sent data ack. Discarding packet")
 					number_of_resends -= 1
 				elif packet.header.syn_flag == 0 or packet.header.ack_flag == 0:
@@ -101,13 +108,17 @@ class RxP:
 				else:
 					print("Received succesful SYN ACK")
 					return packet
-
-			except socket.timeout:
-				print("Sending SYN timed out. " + number_of_resends + " resends remaining")
-				number_of_resends -= 1
+			except Exception as e:
+				if str(e) == "timed out": 
+					print("Sending SYN timed out. " + str(number_of_resends - 1) + " attempts remaining")
+					number_of_resends -= 1
+				else: 
+					raise e
+		raise RxPException("Sending SYN failed!")
 
 		return None
 
+	@staticmethod
 	def sendACK(rxp_socket): 
 		print "Sending ACK!"
 
@@ -116,10 +127,11 @@ class RxP:
 		header.dst_port = rxp_socket.destination_address[1]
 		header.ack_flag = 1
 
-		packet = RxPPacket(header, data)
+		packet = RxPPacket(header)
 
 		rxp_socket.sendPacket(packet)
 
+	@staticmethod
 	def sendSYNACK(rxp_socket): 
 		print "Sending SYNACK!"
 
@@ -129,9 +141,9 @@ class RxP:
 		header.syn_flag = 1
 		header.ack_flag = 1
 
-		packet = RxPPacket(header, data)
+		packet = RxPPacket(header)
 
-		number_of_resends = RxPPacket.RESEND_LIMIT
+		number_of_resends = RxPPacket.MAX_RESEND_LIMIT
 
 		while number_of_resends > 0:
 
@@ -140,7 +152,7 @@ class RxP:
 			try:
 				address, packet = rxp_socket.receivePacket(rxp_socket.receive_window_size)
 
-				if !packet.verifyPacket(): #invalid checksum
+				if not packet.verifyPacket(): #invalid checksum
 					print("Incorrect checksum for sent data ack. Discarding packet")
 					number_of_resends -= 1
 				elif packet.header.syn_flag == 1 or packet.header.ack_flag == 0:
@@ -150,7 +162,7 @@ class RxP:
 					print("Received succesful ACK to our SYNACK")
 					return packet
 
-			except socket.timeout:
+			except rxp_socket.timeout:
 				print("Sending SYN timed out. " + number_of_resends + " resends remaining")
 				number_of_resends -= 1
 
@@ -221,7 +233,7 @@ class RxP:
 			try:
 				address, packet = rxp_socket.receivePacket(rxp_socket.receive_window_size)
 
-				if !packet.verifyPacket: #invalid checksum
+				if not packet.verifyPacket: #invalid checksum
 					print("Incorrect checksum for sent data ack. Discarding packet")
 					window_size += 1
 				else:
@@ -237,7 +249,7 @@ class RxP:
 						if packet.header.seq_number > last_seq_number:
 							print("Sequence number is greater than looking for")
 							window_size += 1
-						else
+						else:
 							print ("Receive duplicate packet. Discarding")
 				
 

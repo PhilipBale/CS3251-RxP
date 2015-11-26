@@ -19,10 +19,11 @@ class RxPPacketHeader:
 		self.checksum = 0
 		self.payload_length = 0
 
-	def toString():
-		return "" + self.src_port + self.dest_port + self.seq_number + self.ack_number 
-		+ self.syn_flag + self.ack_flag + self.fin_flag + self.lst_flag + self.rst_flag 
-		+ self.payload_length + self.rcv_window
+	def toString(self):
+		return "" + str(self.src_port) + str(self.dest_port) + str(self.seq_number) \
+		+ str(self.ack_number) + str(self.syn_flag ) + str(self.ack_flag ) \
+		+ str(self.fin_flag ) + str(self.lst_flag ) + str(self.rst_flag) \
+		+ str(self.payload_length ) + str(self.rcv_window)
 
 		# todo do we include rcv_window?
 

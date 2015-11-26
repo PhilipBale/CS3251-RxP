@@ -1,5 +1,7 @@
 import socket
+
 import RxPPacket
+import pickle
 
 class SocketState:
 	NONE = "created",
@@ -7,9 +9,11 @@ class SocketState:
 	CONNECTED = "connected",
 	CLOSED = "closed",
 
-class RxPSocket:
 
-	CONNECTION_TIMEOUT_LIMIT = 30 # seconds
+CONNECTION_TIMEOUT_LIMIT = 5
+
+class RxPSocket:
+	CONNECTION_TIMEOUT_LIMIT = CONNECTION_TIMEOUT_LIMIT
 
 	def __init__(self):
 		print("Initializing new RxPSocket")
@@ -24,6 +28,8 @@ class RxPSocket:
 
 		self.seq_number = 0
 		self.ack_number = 0
+
+		self._socket.settimeout(CONNECTION_TIMEOUT_LIMIT)
 
 		print("Socket initialized!", str(self))
 
@@ -43,7 +49,6 @@ class RxPSocket:
 		self._socket.settimeout(value)
 
 
-
 	def connect(self, destination_address):
 		if not self.state == SocketState.BOUND:
 			raise RxPException("Socket not bound yet")
@@ -57,18 +62,32 @@ class RxPSocket:
 		self.ack_number = 0
 
 	def sendPacket(self, rxp_packet):
-		self._socket.sentdto(rxp_packet.byteVersion(), self.source_address)
+		self._socket.sendto(rxp_packet.byteVersion(), self.destination_address)
 
 	def receivePacket(self, receive_window_size):
+		self._socket.settimeout(CONNECTION_TIMEOUT_LIMIT)
 		while True:
 			try:
-				packet, address = self._socket.recvfrom(receive_window_size)
+				packet, address = self._socket.recvfrom(int(receive_window_size))
+				print "packet received"
+				packet = self.unpicklePacket(packet)
 				break
 			except socket.error as e:
-				if e.error != -1:
-					raise e # todo fix
+				print("Received error", e)
+				raise e
 
+		print "Returning packet"
 		return (address, packet)
+
+	@property
+	def timeout(self):
+		return self._socket.gettimeout()
+	@timeout.setter
+	def timeout(self, time):
+		self._socket.settimeout(time)
+
+	def unpicklePacket(self, packet):
+		return pickle.loads(packet)
 
 		
 	def __str__(self):
