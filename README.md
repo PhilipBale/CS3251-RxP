@@ -5,6 +5,8 @@ Section B.  Due 11/25/15.
 
 RxP - Reliable Transfer Protocol
 
+Uses python version 2.7 on mac
+
 
 DO NOT USE CYGWIN, THERE ARE KNOWN ISSUES WITH CYGWIN AND PYTHON 2.7's RAW_INPUT
 
