@@ -136,6 +136,7 @@ class RxP:
 		header.src_port = rxp_socket.source_address[1]
 		header.dst_port = rxp_socket.destination_address[1]
 		header.ack_flag = 1
+		header.ack_number = rxp_socket.ack_number
 
 		packet = RxPPacket(header)
 
@@ -229,10 +230,11 @@ class RxP:
 		packets_to_be_acked = deque()
 
 		window_size = rxp_socket.receive_window_size
-		last_seq_number = packets_to_send[0].header.seq_number
+		cur_seq_number = packets_to_send[0].header.seq_number
 
 		print ("Sending packets for data: ", data)
 		while len(packets_to_send) > 0:
+
 
 			while window_size > 0 and len(packets_to_send) > 0:
 				packet = packets_to_send.popleft()
@@ -250,18 +252,22 @@ class RxP:
 					window_size += 1
 				else:
 					# valid packet
-					if packet.header.ack_number == last_seq_number and packet.header.ack_flag > 0:
-						print("Received ack: ", last_seq_number)
-						packets_to_be_acked.pop()
-						last_seq_number += 1
+					print("Validating packet!")
+					if packet.header.ack_number == cur_seq_number and packet.header.ack_flag > 0:
+						print("Received desired ack: ", cur_seq_number)
+						packets_to_be_acked.popleft()
+						cur_seq_number += 1
 						window_size += 1
 						window_size *= 2
 					else:
 						print("Received sent packet ack but not one we were looking for")
-						if packet.header.seq_number > last_seq_number:
+						print(str(packet.header.ack_number) + " vs " + str(cur_seq_number))
+						if packet.header.seq_number > cur_seq_number:
 							print("Sequence number is greater than looking for")
 							window_size += 1
 						else:
+							packets_to_send.extendleft(packets_to_be_acked)
+							packets_to_be_acked.clear()
 							print ("Receive duplicate packet. Discarding")
 				
 
@@ -269,9 +275,8 @@ class RxP:
 				if str(e) == "timed out": 
 					print("Socket timeout for sent ack receive--resending")
 					# need to send packet
-					window_size = 1
-					packets_to_send.extendleft(packets_to_be_acked)
-					packets_to_be_acked.clear()
+					window_size = 3
+					
 				else: 
 					raise e
 
@@ -304,9 +309,10 @@ class RxP:
 					print "Incoming seq number: ", incoming_packet.header.seq_number
 					RxP.sendACK(rxp_socket) # resend
 				elif incoming_packet.header.seq_number == rxp_socket.ack_number:
+					RxP.sendACK(rxp_socket)
+
 					rxp_socket.ack_number += 1
 					data_buffer += incoming_packet.payload
-					RxP.sendACK(rxp_socket)
 					rxp_socket.receive_window_size = incoming_packet.header.rcv_window
 
 					if incoming_packet.header.lst_flag == 1:
