@@ -36,7 +36,7 @@ def main():
 
     file = ""
     # window size in segments
-    windowSize = 1
+    windowSize = 30
 
     # check for valid client port numbers
     if portnumber < 1025 or portnumber > 65536: 
@@ -60,6 +60,8 @@ def main():
     if emuportnumber < 1025 or emuportnumber > 65536: 
         print 'Please enter a valid port number for NetEmu (1025-65536)'
         sys.exit()
+
+    global emuportnumber
 
     # When everything passes, bind the RxP socket to passed in ip_address and port_number
     clientSocket = RxP.createRxPSocket(ipaddress, portnumber)
@@ -124,7 +126,7 @@ def main():
 def connect(): 
     print "Connecting to server"
     ip, port = clientSocket.source_address
-    RxP.connectToRxP(clientSocket, ip, port + 1)
+    RxP.connectToRxP(clientSocket, ip, emuportnumber)
     return
 
 # Download the file specified if it exists on the server

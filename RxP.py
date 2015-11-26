@@ -292,6 +292,8 @@ class RxP:
 					print("Validating packet!")
 					if packet.header.ack_number == cur_seq_number and packet.header.ack_flag > 0:
 						print("Received desired ack: ", cur_seq_number)
+						if len(packets_to_be_acked) > 0:
+							break
 						packets_to_be_acked.popleft()
 						cur_seq_number += 1
 						window_size += 1
@@ -313,9 +315,6 @@ class RxP:
 					print("Socket timeout for sent ack receive--resending")
 					# need to send packet
 					window_size = 3
-					
-				else: 
-					raise e
 
 	@staticmethod
 	def receiveData(rxp_socket, max_length=99999999999999999):

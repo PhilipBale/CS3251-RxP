@@ -59,6 +59,8 @@ def main():
         print 'Please enter a valid port number for NetEmu (1025-65536)'
         sys.exit()
 
+    global emuportnumber
+
 
 
     # creating and binding rxp socket

@@ -72,6 +72,11 @@ class RxPSocket:
 				packet, address = self._socket.recvfrom(int(receive_window_size))
 				print "packet received"
 				packet = self.unpicklePacket(packet)
+				packet_type = type(packet)
+				if not isinstance(packet, RxPPacket.RxPPacket):
+					print("Packet was managled, not correct type!.  Got: ", packet_type)
+					continue
+
 				print "unpickled"
 
 				break
