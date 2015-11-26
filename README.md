@@ -26,7 +26,10 @@ eg 'python FxA_Client.py 3002 127.0.0.1 5000'
 
 - Command: connect - The FxA-client connects to the FxA-server (running at the same IP host). 
 
-- Command: get F - The FxA-client downloads file F from the server (if F exists in the same directory with the FxA-server program). 
+- Command: get F - The FxA-client downloads file F from the server (if F exists in the same directory with the FxA-server program).
+
+-the only file that exists on the server is obama.txt (Obama's inaugaral address)
+
 
 - Command: post F - The FxA-client uploads file F to the server (if F exists in the same directory with the FxA-client program). This feature will be treated as extra credit for up to 20 project points.
 

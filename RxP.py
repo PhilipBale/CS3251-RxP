@@ -16,7 +16,44 @@ class RxP:
 
 	@staticmethod
 	def closeRxPSocket(rxp_socket):
-		rxp_socket.close()
+		header = RxPPacketHeader()
+		header.src_port = rxp_socket.source_address[1]
+		header.dst_port = rxp_socket.destination_address[1]
+		header.fin_flag = 1
+
+		packet = RxPPacket(header)
+
+		number_of_resends = RxPPacket.MAX_RESEND_LIMIT
+
+		while number_of_resends > 0:
+			print "Attempt #", (RxPPacket.MAX_RESEND_LIMIT - number_of_resends) + 1
+			rxp_socket.sendPacket(packet)
+			try:
+				address, packet = rxp_socket.receivePacket(RxPPacket.MAX_PACKET_SIZE)
+
+				print "Verifying packet"
+
+				if not packet.verifyPacket(): #invalid checksum
+					print("Incorrect checksum for sent data ack. Discarding packet")
+					number_of_resends -= 1
+				elif packet.header.syn_flag == 1 or packet.header.ack_flag == 0:
+					print("Not a ACK! Discarding")
+					number_of_resends -= 1
+				else:
+					print("Received succesful ACK")
+					rxp_socket.close() 
+			except Exception as e:
+				if str(e) == "timed out": 
+					print("Sending SYN timed out. " + str(number_of_resends - 1) + " attempts remaining")
+					number_of_resends -= 1
+				elif str(e).find("EOFError"):
+					print("Packet was mangled! resending!")
+					number_of_resends -= 1
+				else:  
+					raise e
+		raise RxPException("Sending ClOSE failed!  Closing anyway!")
+
+		rxp_socket.close() 
 		# todo send closing stuff
 
 	@staticmethod
