@@ -12,10 +12,12 @@ class SocketState:
 
 CONNECTION_TIMEOUT_LIMIT = 5
 LISTEN_TIMEOUT_LIMIT = 10
+RECEIVE_TIMEOUT_LIMIT = 20
 
 class RxPSocket:
 	CONNECTION_TIMEOUT_LIMIT = CONNECTION_TIMEOUT_LIMIT
 	LISTEN_TIMEOUT_LIMIT = LISTEN_TIMEOUT_LIMIT
+	RECEIVE_TIMEOUT_LIMIT = RECEIVE_TIMEOUT_LIMIT
 
 	def __init__(self):
 		print("Initializing new RxPSocket")
@@ -59,9 +61,6 @@ class RxPSocket:
 
 		self.destination_address = destination_address
 		self.state = SocketState.CONNECTED
-
-		self.seq_number = 0
-		self.ack_number = 0
 
 	def sendPacket(self, rxp_packet):
 		self._socket.sendto(rxp_packet.byteVersion(), self.destination_address)

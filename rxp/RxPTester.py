@@ -49,7 +49,7 @@ def test_basic_sending(is_client):
         print "Testing basic connection as a client"
         client = RxP.createRxPSocket("localhost", 5000)
         RxP.connectToRxP(client, "localhost", 5001)
-        RxP.sendData(client, "Hello, World!")
+        RxP.sendData(client, "Hello, World!  This is a big test.  Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test")
 
         RxP.closeRxPSocket(client)
     else:
@@ -59,7 +59,8 @@ def test_basic_sending(is_client):
         print("Receieved connection attempt from: ", connection_attempt_address)
         RxP.acceptRxPSocketConnection(server, connection_attempt_address)
 
-        time.sleep(5)
+        response = RxP.receiveData(server, 999999)
+        print "Received data: ", response
  
         RxP.closeRxPSocket(server)
 

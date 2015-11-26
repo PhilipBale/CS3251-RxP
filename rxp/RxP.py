@@ -57,7 +57,7 @@ class RxP:
 
 
 		rxp_socket.seq_number = 0
-		rxp_socket.ack_number = 1
+		rxp_socket.ack_number = 1000
 
 		rxp_socket.destination_address = incoming_address
 
@@ -72,7 +72,8 @@ class RxP:
 		rxp_socket.connect(destination_address)
 
 		syn_ack = RxP.sendSYN(rxp_socket) # TODO implement
-		rxp_socket.ack_number = syn_ack.header.seq_number + 1
+		rxp_socket.seq_number = 1000
+		rxp_socket.ack_number = 0
 
 		RxP.sendACK(rxp_socket)
 
@@ -202,36 +203,33 @@ class RxP:
 		# these are the acual packets that we need to send
 		packets_to_send = deque()
 
-		for data in data_chunks:
-			is_first_packet = (data == data_chunks[0])
-			is_last_packet = (data == data_chunks[-1])
+		for data_item in data_chunks:
+			is_last_packet = (data_item == data_chunks[-1])
 
 			header = RxPPacketHeader()
 			header.src_port = rxp_socket.source_address[1]
 			header.dst_port = rxp_socket.destination_address[1]
 
-			if is_first_packet:
-				header.fst_flag = 1
-			elif is_last_packet:
+			if is_last_packet:
 				header.lst_flag = 1
 
 			header.seq_number = rxp_socket.seq_number
 			rxp_socket.seq_number += 1 # todo wrap sequence number if needed
 
-			packet = RxPPacket(header, data)
+			packet = RxPPacket(header, data_item)
 			packets_to_send.append(packet)
 
 		# these are the packets that we know are sent but haven't been acked yet
-		packets_to_be_acked  = deque()
+		packets_to_be_acked = deque()
 
 		window_size = rxp_socket.receive_window_size
-		last_seq_number = 0
+		last_seq_number = packets_to_send[0].header.seq_number
 
 		print ("Sending packets for data: ", data)
 		while len(packets_to_send) > 0:
 
 			while window_size > 0 and len(packets_to_send) > 0:
-				packet = packets_to_send.pop()
+				packet = packets_to_send.popleft()
 
 				rxp_socket.sendPacket(packet)
 				window_size -= 1
@@ -246,7 +244,7 @@ class RxP:
 					window_size += 1
 				else:
 					# valid packet
-					if packet.header.seq_number == last_seq_number and packet.header.ack_flag > 0:
+					if packet.header.ack_number == last_seq_number and packet.header.ack_flag > 0:
 						print("Received ack: ", last_seq_number)
 						packets_to_be_acked.pop()
 						last_seq_number += 1
@@ -271,6 +269,46 @@ class RxP:
 				else: 
 					raise e
 
+	@staticmethod
 	def receiveData(rxp_socket, max_length):
-		# todo implement data receiving
-		print "Method not completed"
+		if not rxp_socket.state == SocketState.CONNECTED:
+			raise RxPException("sendData: Socket not connected!")
+
+		timeout_limit = RxPSocket.RECEIVE_TIMEOUT_LIMIT
+
+		data_buffer = ""
+
+		while timeout_limit > 0:
+			incoming_packet = None
+			try:
+				packet_address, incoming_packet = rxp_socket.receivePacket(rxp_socket.receive_window_size)
+			except RxPException as e:
+				if e.type == RxPException.TIMEOUT or e.type == RxPException.INVALID_CHECKSUM:
+					timeout_limit -= 1
+			except Exception as e:
+				if str(e) == "timed out":
+					print "Timed out, trying again."
+					timeout_limit -= 1
+
+			if not incoming_packet is None and incoming_packet.verifyPacket():
+				# let's do some work on this packet
+				print "Incoming/Outcoing: " + str(incoming_packet.header.seq_number) + ":" + str(rxp_socket.ack_number)
+				if incoming_packet.header.seq_number < rxp_socket.ack_number:
+					print "Resending ack!"
+					print "Incoming seq number: ", incoming_packet.header.seq_number
+					RxP.sendACK(rxp_socket) # resend
+				elif incoming_packet.header.seq_number == rxp_socket.ack_number:
+					rxp_socket.ack_number += 1
+					data_buffer += incoming_packet.payload
+					RxP.sendACK(rxp_socket)
+
+					if incoming_packet.header.lst_flag == 1:
+						return data_buffer
+					elif incoming_packet.header.fin_flag == 1:
+						RxP.sendACK(rxp_socket)
+						RxP.closeRxPSocket(rxp_socket)
+
+		if timeout_limit <= 0:
+			raise RxPException(RxPException.CONNECTION_TIMEOUT)
+
+		return None
