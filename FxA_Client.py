@@ -36,7 +36,7 @@ def main():
 
     file = ""
     # window size in segments
-    windowSize = 29992
+    windowSize = 1
 
     # check for valid client port numbers
     if portnumber < 1025 or portnumber > 65536: 

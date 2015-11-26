@@ -28,7 +28,7 @@ class RxP:
 		while timeout_limit > 0:
 			incoming_packet = None
 			try:
-				packet_address, incoming_packet = rxp_socket.receivePacket(rxp_socket.receive_window_size)
+				packet_address, incoming_packet = rxp_socket.receivePacket(RxPPacket.MAX_PACKET_SIZE)
 			except RxPException as e:
 				if e.type == RxPException.TIMEOUT or e.type == RxPException.INVALID_CHECKSUM:
 					timeout_limit -= 1
@@ -99,9 +99,8 @@ class RxP:
 		while number_of_resends > 0:
 			print "Attempt #", (RxPPacket.MAX_RESEND_LIMIT - number_of_resends) + 1
 			rxp_socket.sendPacket(packet)
-			print "Window size: ", rxp_socket.receive_window_size
 			try:
-				address, packet = rxp_socket.receivePacket(rxp_socket.receive_window_size)
+				address, packet = rxp_socket.receivePacket(RxPPacket.MAX_PACKET_SIZE)
 
 				print "Verifying packet"
 
@@ -161,7 +160,7 @@ class RxP:
 			rxp_socket.sendPacket(packet)
 
 			try:
-				address, packet = rxp_socket.receivePacket(rxp_socket.receive_window_size)
+				address, packet = rxp_socket.receivePacket(RxPPacket.MAX_PACKET_SIZE)
 
 				if not packet.verifyPacket(): #invalid checksum
 					print("Incorrect checksum for sent data ack. Discarding packet")
@@ -215,6 +214,7 @@ class RxP:
 			header = RxPPacketHeader()
 			header.src_port = rxp_socket.source_address[1]
 			header.dst_port = rxp_socket.destination_address[1]
+			header.rcv_window = rxp_socket.receive_window_size
 
 			if is_last_packet:
 				header.lst_flag = 1
@@ -243,7 +243,7 @@ class RxP:
 
 			# collect acks
 			try:
-				address, packet = rxp_socket.receivePacket(rxp_socket.receive_window_size)
+				address, packet = rxp_socket.receivePacket(RxPPacket.MAX_PACKET_SIZE)
 
 				if not packet.verifyPacket: #invalid checksum
 					print("Incorrect checksum for sent data ack. Discarding packet")
@@ -287,7 +287,7 @@ class RxP:
 		while timeout_limit > 0:
 			incoming_packet = None
 			try:
-				packet_address, incoming_packet = rxp_socket.receivePacket(rxp_socket.receive_window_size)
+				packet_address, incoming_packet = rxp_socket.receivePacket(RxPPacket.MAX_PACKET_SIZE)
 			except RxPException as e:
 				if e.type == RxPException.TIMEOUT or e.type == RxPException.INVALID_CHECKSUM:
 					timeout_limit -= 1
@@ -307,6 +307,7 @@ class RxP:
 					rxp_socket.ack_number += 1
 					data_buffer += incoming_packet.payload
 					RxP.sendACK(rxp_socket)
+					rxp_socket.receive_window_size = incoming_packet.header.rcv_window
 
 					if incoming_packet.header.lst_flag == 1:
 						return data_buffer
