@@ -1,6 +1,7 @@
 #FxA Server
 #for command line arguments
 import sys
+from RxP import RxP
 
 # for ip address validation
 from socket import inet_aton
@@ -39,7 +40,7 @@ def main():
 
     # Port number for client must be even
     if portnumber % 2 != 1:
-        print 'Port number for client must be odd'
+        print 'Port number for server must be odd'
         sys.exit()
 
     # check for valid IP addresses
@@ -56,13 +57,12 @@ def main():
 
 
 
-    #TODO creating and binding rxp socket
-    #serverSocket = RxP()
-    #serverSocket.createRxPSocket()
-    #serverSocket.listenForRxPConnections()
+    # creating and binding rxp socket
+    serverSocket = RxP.createRxPSocket(ipaddress, portnumber)
+    incoming_connection = RxP.listenForRxPConnections(serverSocket)
 
     # After getting an incoming connection
-    #serverSocket.acceptRxPSocketConnection()
+    RxP.acceptRxPSocketConnection(serverSocket, incoming_connection)
 
     #the command loop
     while True:
@@ -101,7 +101,7 @@ def window(newsize):
 #Shutdown the server
 def terminate():
     print "Shutting down server"
-    #serverSocket.closeRxPSocket()
+    serverSocket.closeRxPSocket()
     
     return
 

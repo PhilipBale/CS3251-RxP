@@ -6,8 +6,7 @@ class RxPPacketHeader:
 
 		self.seq_number = 0
 		self.ack_number = 0
-
-		self.fst_flag = 0
+		
 		self.syn_flag = 0
 		self.ack_flag = 0
 		self.fin_flag = 0

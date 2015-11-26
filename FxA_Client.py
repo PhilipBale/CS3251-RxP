@@ -1,6 +1,7 @@
 #FxA Client
 #for command line arguments
 import sys
+from RxP import RxP
 
 # for ip address validation
 from socket import inet_aton
@@ -60,10 +61,11 @@ def main():
         sys.exit()
 
     # When everything passes, bind the RxP socket to passed in ip_address and port_number
-    #clientSocket.createRxPSocket(ipaddress, portnumber)
-
+    clientSocket = RxP.createRxPSocket(ipaddress, portnumber)
+    global clientSocket
+    
     # Set window size
-    #clientSocket.setWindowSize(clientSocket, size)
+    RxP.setWindowSize(clientSocket, windowSize)
 
 
     print "Welcome! Commands include: \n'connect' \n'get <file>' \n'post <file>' \n'window <size>' \n'disconnect'"
@@ -120,8 +122,8 @@ def main():
 #Connect the client to the FxA-server
 def connect(): 
     print "Connecting to server"
-    #TODO
-    #clientSocket.connectToRxP
+    ip, port = clientSocket.source_address
+    RxP.connectToRxP(clientSocket, ip, port + 1)
     return
 
 # Download the file specified if it exists on the server

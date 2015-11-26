@@ -34,7 +34,7 @@ class RxP:
 					timeout_limit -= 1
 			except Exception as e:
 				if str(e) == "timed out":
-					print "Timed out, trying again."
+					print "Incoming connection timed out, trying again."
 					timeout_limit -= 1
 
 			if not incoming_packet is None:
@@ -79,6 +79,7 @@ class RxP:
 
 		print("Succesfully connected to RxP!")
 
+	@staticmethod
 	def setWindowSize(rxp_socket, window_length):
 		rxp_socket.receive_window_size = window_length
 
