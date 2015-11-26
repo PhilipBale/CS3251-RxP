@@ -276,7 +276,7 @@ class RxP:
 					raise e
 
 	@staticmethod
-	def receiveData(rxp_socket, max_length):
+	def receiveData(rxp_socket, max_length=99999999999999999):
 		if not rxp_socket.state == SocketState.CONNECTED:
 			raise RxPException("sendData: Socket not connected!")
 
@@ -319,3 +319,7 @@ class RxP:
 			raise RxPException(RxPException.CONNECTION_TIMEOUT)
 
 		return None
+
+	@staticmethod
+	def isConnected(rxp_socket):
+		return rxp_socket.state == SocketState.CONNECTED

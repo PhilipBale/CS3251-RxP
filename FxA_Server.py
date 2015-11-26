@@ -1,10 +1,13 @@
 #FxA Server
 #for command line arguments
 import sys
+import threading
 from RxP import RxP
 
 # for ip address validation
 from socket import inet_aton
+
+threads = []
 
 def main():
     # check for number of correct command line arguments
@@ -65,6 +68,10 @@ def main():
 
     # After getting an incoming connection
     RxP.acceptRxPSocketConnection(serverSocket, incoming_connection)
+    if RxP.isConnected(serverSocket):
+        thread = threading.Thread(target=listenForServerRequests)
+        thread.start()
+        threads.append(thread)
 
     #the command loop
     while True:
@@ -81,6 +88,11 @@ def main():
             # terminate the server
             if command[0] == "terminate":
                 terminate()
+
+                for thread in threads:
+                    thread.join()
+                sys.exit()
+
                 continue
             else:
                 print "Please enter a valid command"
@@ -103,8 +115,21 @@ def window(newsize):
 #Shutdown the server
 def terminate():
     print "Shutting down server"
-    RxP.closeRxPSocket(serverSocket)
-    sys.exit()
+    RxP.closeRxPSocket(serverSocket) 
     return
+
+def listenForServerRequests():
+    print "Listening for server requests!"
+    while(True):
+        request = RxP.receiveData(serverSocket)
+        if "GET" in str(request):
+            print "GETTING a file"
+            request = str(request).replace("GET: ", "")
+            print "Getting file: ", request
+
+        with open (request, "r") as myfile:
+            data = myfile.read()
+
+        RxP.sendData(serverSocket, data)
 
 main()

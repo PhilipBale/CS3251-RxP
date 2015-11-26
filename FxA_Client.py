@@ -130,7 +130,9 @@ def connect():
 # Download the file specified if it exists on the server
 def get(filename):
     print "Downloading file: " + str(filename)
-    #TODO
+    RxP.sendData(clientSocket, "GET: " + str(filename))
+    response = RxP.receiveData(clientSocket)
+    print "Received response: ", response
     #clientSocket.recieveData
     return
 
