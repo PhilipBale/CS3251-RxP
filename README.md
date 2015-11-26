@@ -22,6 +22,10 @@ P: the UDP port number of NetEmu
 
 *******************************************
 eg 'python FxA_Client.py 3002 127.0.0.1 5000'
+
+then run 'connect'
+
+then run 'get obama.txt'
 *******************************************
 
 - Command: connect - The FxA-client connects to the FxA-server (running at the same IP host). 
